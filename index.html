@@ -5,98 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>REMASEP3 – Clínica Sonrisa Ideal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-  :root {
-    --bg:#fdf6ee;--surface:#fff;--surface2:#fff9f2;
-    --border:#f0d9b8;--border2:#e5c990;
-    --orange:#f97316;--orange-light:#fff0e0;--orange-mid:#fde3c0;
-    --green:#16a34a;--green-light:#dcfce7;--red:#dc2626;
-    --ink:#1c1410;--muted:#8a7560;
-    --tag-bg:#fef3c7;--tag-border:#fcd34d;
-    --shadow:0 2px 12px rgba(200,120,30,.10);
-    --shadow-lg:0 8px 32px rgba(200,120,30,.13);
+  :root{
+    --bg:#fdf6ee;--surface:#fff;--surface2:#fff9f2;--border:#f0d9b8;--border2:#e5c990;
+    --orange:#f97316;--orange-light:#fff0e0;--orange-mid:#fde3c0;--green:#16a34a;
+    --green-light:#dcfce7;--red:#dc2626;--ink:#1c1410;--muted:#8a7560;
+    --shadow:0 2px 12px rgba(200,120,30,.10);--shadow-lg:0 8px 32px rgba(200,120,30,.13)
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
   header{background:var(--orange);padding:18px 28px;display:flex;align-items:center;gap:14px;box-shadow:0 3px 16px rgba(249,115,22,.30)}
-  header .logo{width:42px;height:42px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-  header h1{color:white;font-size:clamp(15px,2.5vw,20px);font-weight:700;line-height:1.2}
-  header p{color:rgba(255,255,255,.80);font-size:12px;margin-top:2px}
+  header .logo{width:44px;height:44px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+  header h1{color:#fff;font-size:clamp(20px,3vw,28px);font-weight:700;line-height:1.05}
+  header p{color:rgba(255,255,255,.86);font-size:12px;margin-top:4px}
   main{max-width:1000px;margin:0 auto;padding:24px 16px 60px}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
   .card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-  .step{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--orange);color:white;border-radius:50%;font-size:12px;font-weight:700;flex-shrink:0}
+  .step{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;background:var(--orange);color:#fff;border-radius:50%;font-size:12px;font-weight:700;flex-shrink:0}
   .step.done{background:var(--green)}
-  textarea{width:100%;min-height:130px;background:var(--surface2);color:var(--ink);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;resize:vertical;outline:none;transition:border .2s}
+  textarea{width:100%;min-height:145px;background:var(--surface2);color:var(--ink);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;resize:vertical;outline:none;transition:border .2s}
   textarea:focus{border-color:var(--orange)}
   .btn-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
   button{padding:9px 18px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .15s,transform .1s}
   button:active{transform:scale(.97)}
-  .btn-primary{background:var(--orange);color:white}.btn-primary:hover{opacity:.88}
-  .btn-green{background:var(--green);color:white}.btn-green:hover{opacity:.88}
-  .btn-secondary{background:var(--orange-mid);color:var(--ink);border:1px solid var(--border2)}
+  .btn-primary{background:var(--orange);color:#fff}.btn-primary:hover{opacity:.88}
   .btn-danger{background:#fee2e2;color:var(--red);border:1px solid #fca5a5}
-  .btn-blue{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
-  button:disabled{opacity:.45;cursor:not-allowed}
+  .btn-copy{background:var(--orange-mid);border:1px solid var(--border2);color:var(--ink);padding:7px 14px;font-size:12px}
+  .btn-copy:hover{background:var(--orange);color:#fff}
   .hint{font-size:12px;color:var(--muted);margin-top:7px}
-  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px;margin-bottom:14px}
-  .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:center;box-shadow:var(--shadow)}
-  .stat-box .val{font-size:26px;font-weight:700;color:var(--orange);line-height:1}
-  .stat-box .lbl{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
-  .tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:10px}
-  .tag{background:var(--tag-bg);border:1px solid var(--tag-border);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
-  .tag .rm{cursor:pointer;color:var(--muted);font-size:13px;transition:color .15s}.tag .rm:hover{color:var(--red)}
-  .search-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .search-box{position:relative;flex:1;min-width:220px}
-  .search-box input{width:100%;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border .2s;color:var(--ink)}
-  .search-box input:focus{border-color:var(--orange)}
-  .search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px}
-  .suggestions{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;z-index:100;max-height:230px;overflow-y:auto;box-shadow:var(--shadow-lg)}
-  .sug-item{padding:9px 13px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
-  .sug-item:hover{background:var(--orange-light)}
-  .sug-cnt{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:var(--orange-mid);border-radius:6px;padding:1px 7px}
-  .divider{border:none;border-top:1px dashed var(--border2);margin:14px 0}
-  .table-wrap{overflow-x:auto}
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+  .stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat-box .val{font-size:25px;font-weight:700;color:var(--orange);line-height:1}
+  .stat-box .lbl{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+  .result-note{font-size:12px;color:var(--muted);margin:-2px 0 14px;line-height:1.5}
+  .table-wrap{overflow-x:auto;margin-bottom:18px}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  thead th{background:var(--orange-mid);padding:9px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border2);white-space:nowrap;text-align:center}
+  thead th{background:var(--orange-mid);padding:9px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--border2);white-space:nowrap;text-align:center}
   th.left,td.left{text-align:left}
   td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
   tr:last-child td{border-bottom:none}
   tr:hover td{background:var(--orange-light)}
   .row-total td{font-weight:700;background:var(--orange-mid)}
-  .sel-note{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:10px}
-  .sel-note strong{color:var(--ink);font-style:normal}
-  /* Upload zone */
-  .upload-zone{border:2px dashed var(--border2);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
-  .upload-zone:hover,.upload-zone.drag{border-color:var(--orange);background:var(--orange-light)}
-  .upload-zone .ico{font-size:32px;margin-bottom:8px}
-  .upload-zone p{font-size:13px;color:var(--muted)}
-  .upload-zone strong{color:var(--ink)}
-  .file-loaded{display:flex;align-items:center;gap:10px;background:var(--green-light);border:1px solid #86efac;border-radius:10px;padding:10px 14px;margin-top:10px}
-  .file-loaded .ico{font-size:20px}
-  .file-loaded .name{font-size:13px;font-weight:600;color:var(--green)}
-  .file-loaded .sub{font-size:11px;color:var(--muted)}
-  /* mapping table */
-  .map-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
-  .map-table th{background:var(--orange-mid);padding:6px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-  .map-table td{padding:6px 10px;border-bottom:1px solid var(--border)}
-  .map-table tr:last-child td{border-bottom:none}
-  .map-table .matched{color:var(--green);font-weight:600}
-  .map-table .unmatched{color:var(--red)}
-  .map-table .ignored{color:var(--muted);font-style:italic}
-  .copy-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;margin-bottom:10px}
+  .section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:15px 0 9px}
+  .copy-block{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:13px 14px;margin-bottom:10px}
+  .copy-block.derived{border-color:#fdba74;background:#fff7ed}
   .copy-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-  .copy-trat{font-size:13px;font-weight:700}
-  .btn-copy{background:var(--orange-mid);border:1px solid var(--border2);color:var(--ink);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
-  .btn-copy:hover{background:var(--orange);color:white}
+  .copy-title-wrap{display:flex;align-items:center;gap:8px;min-width:0}
+  .order-num{display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:25px;border-radius:7px;background:var(--orange-mid);font-family:'DM Mono',monospace;font-size:11px;font-weight:700}
+  .copy-trat{font-size:13px;font-weight:700;line-height:1.3}
+  .badge{font-family:'DM Mono',monospace;font-size:10px;background:var(--orange-mid);border-radius:5px;padding:2px 7px;color:var(--muted);white-space:nowrap}
   .copy-preview{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
   .cv{font-size:11px;padding:2px 7px;border-radius:5px;background:var(--orange-light);border:1px solid var(--border)}
-  .cv-emb{background:#fce7f3;border-color:#f9a8d4}
-  .cv-mig{background:#dbeafe;border-color:#93c5fd}
-  .copy-hint{font-size:11px;color:var(--green);margin-top:4px;min-height:14px}
+  .cv-emb{background:#fce7f3;border-color:#f9a8d4}.cv-mig{background:#dbeafe;border-color:#93c5fd}
+  .cv-total{background:var(--orange-mid);border-color:var(--border2);font-weight:700}
+  .copy-hint{font-size:11px;color:var(--green);margin-top:5px;min-height:14px}
+  .empty{padding:28px;text-align:center;color:var(--muted);font-size:13px}
+  .other-title{margin-top:20px;padding-top:13px;border-top:1px dashed var(--border2)}
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   .animate-in{animation:fadeIn .25s ease forwards}
+  @media(max-width:600px){header{padding:15px 17px}main{padding:16px 10px 45px}.card{padding:15px 13px}.copy-header{align-items:flex-start}.btn-copy{width:100%}}
 </style>
 </head>
 <body>
@@ -104,462 +71,269 @@
   <div class="logo">🦷</div>
   <div>
     <h1>REMASEP3</h1>
-    <p>Clasificador de prestaciones por edad, sexo, embarazo y condición migrante</p>
+    <p>Clasificador automático de prestaciones odontológicas para REMASEP</p>
   </div>
 </header>
 <main>
-
-  <!-- PASO 1 -->
-  <div class="card">
-    <div class="card-title"><span class="step" id="s1">1</span> Pegar datos del mes</div>
-    <textarea id="pasteArea" placeholder="Pega aquí los datos copiados desde Excel (columnas separadas por tabulación)&#10;Fecha	Nombre	Sexo	Edad	Embarazada	Migrante		N°Recibo	Procedimiento	Cantidad"></textarea>
-    <p class="hint">Las filas ANULADA y de Pago se excluyen automáticamente.</p>
+  <section class="card">
+    <div class="card-title"><span class="step">1</span> Pegar tabla completa del mes</div>
+    <textarea id="pasteArea" placeholder="Pega aquí la tabla copiada desde Excel.&#10;Fecha	Nombre	Sexo	Edad	Embarazada	Migrante		N°Recibo	Procedimiento	Cantidad"></textarea>
+    <p class="hint">Al cargar, REMASEP3 procesará todos los procedimientos automáticamente. Las filas ANULADA y Pago se excluyen.</p>
     <div class="btn-row">
-      <button class="btn-primary" id="btnCargar">📂 Cargar datos</button>
+      <button class="btn-primary" id="btnCargar">⚡ Cargar y procesar</button>
       <button class="btn-danger" id="btnBorrar">✕ Borrar todo</button>
     </div>
-  </div>
+  </section>
 
-  <!-- PASO 2 -->
-  <div class="card" id="paso2" style="display:none">
-    <div class="card-title"><span class="step" id="s2">2</span> Seleccionar tratamientos a clasificar</div>
+  <section class="card animate-in" id="resultados" style="display:none">
+    <div class="card-title"><span class="step done">2</span> Resultados en orden REMASEP_OD</div>
     <div class="stats-row" id="statsRow"></div>
-    <div id="tagList" class="tag-list"></div>
-    <div class="search-row">
-      <div class="search-box" id="searchBox">
-        <span class="search-ico">🔎</span>
-        <input type="text" id="searchInput" placeholder="Buscar tratamiento..." autocomplete="off"/>
-        <div class="suggestions" id="suggestions" style="display:none"></div>
-      </div>
-      <button class="btn-secondary" id="btnTodos">Seleccionar todos</button>
-      <button class="btn-secondary" id="btnLimpiar">Limpiar selección</button>
-    </div>
-    <div class="divider"></div>
-    <div class="btn-row">
-      <button class="btn-green" id="btnProcesar" disabled>⚡ Procesar REMASEP</button>
-    </div>
-    <p class="hint" id="hintSel">Selecciona al menos un tratamiento para procesar.</p>
-  </div>
+    <p class="result-note" id="resultNote"></p>
 
-  <!-- PASO 3: Resultado REMASEP -->
-  <div class="card animate-in" id="paso3" style="display:none">
-    <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div style="display:flex;align-items:center;gap:8px"><span class="step done">3</span> Resultado REMASEP</div>
-      <button class="btn-copy" id="btnCopyTabla" style="display:none">📋 Copiar tabla</button>
-    </div>
-    <div class="sel-note" id="selNote"></div>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th class="left">Rango de Edad</th>
-            <th>Hombres</th>
-            <th>Mujeres</th>
-            <th>Embarazadas</th>
-            <th>Migrantes</th>
-          </tr>
-        </thead>
+        <thead><tr><th class="left">Rango de Edad</th><th>Hombres</th><th>Mujeres</th><th>Embarazadas</th><th>Migrantes</th></tr></thead>
         <tbody id="remasepBody"></tbody>
       </table>
     </div>
-    <div id="copySection" style="margin-top:16px"></div>
-    <div id="mqSection" style="display:none;margin-top:16px"></div>
-  </div>
 
+    <div class="section-label">Filas listas para copiar a Excel</div>
+    <div id="copySection"></div>
+  </section>
 </main>
 
 <script>
 (function(){
-  // ── REMASEP CONFIG ──────────────────────────────────────
   const RANGOS=[
-    {n:"Menos de 1 año - 1 año",min:0,max:1},
-    {n:"2 años",min:2,max:2},{n:"3 años",min:3,max:3},{n:"4 años",min:4,max:4},
-    {n:"5 años",min:5,max:5},{n:"6 años",min:6,max:6},{n:"7 años",min:7,max:7},
-    {n:"8-9 años",min:8,max:9},{n:"10-14 años",min:10,max:14},
-    {n:"15-19 años",min:15,max:19},{n:"20-24 años",min:20,max:24},
-    {n:"25-34 años",min:25,max:34},{n:"35-44 años",min:35,max:44},
-    {n:"45-59 años",min:45,max:59},{n:"60-64 años",min:60,max:64},
-    {n:"65-74 años",min:65,max:74},{n:"75 y más años",min:75,max:200}
+    {n:'Menos de 1 año - 1 año',min:0,max:1},{n:'2 años',min:2,max:2},{n:'3 años',min:3,max:3},{n:'4 años',min:4,max:4},
+    {n:'5 años',min:5,max:5},{n:'6 años',min:6,max:6},{n:'7 años',min:7,max:7},{n:'8-9 años',min:8,max:9},
+    {n:'10-14 años',min:10,max:14},{n:'15-19 años',min:15,max:19},{n:'20-24 años',min:20,max:24},{n:'25-34 años',min:25,max:34},
+    {n:'35-44 años',min:35,max:44},{n:'45-59 años',min:45,max:59},{n:'60-64 años',min:60,max:64},{n:'65-74 años',min:65,max:74},{n:'75 y más años',min:75,max:200}
   ];
 
-  // ── HELPERS ─────────────────────────────────────────────
+  const ORDEN_REMASEP=[
+    'Controles Odontológicos generales',
+    'Urgencia con Obturación definitiva',
+    'Aplicación de sellante en pieza permanente, Fotocurado',
+    'Instrucción y control de higiene oral en Niños y Adultos',
+    'Aplicación Flúor Gel niño y adulto',
+    'Higiene y Profilaxis en Niños y Adultos',
+    'Educación individual con instrucción de técnica de cepillado',
+    'Consejería breve en tabaco',
+    'Destartraje supragingival y pulido coronario',
+    'Exodoncia (todos los tipos)',
+    'Restauración estética (incluye todos los tipos III y IV)',
+    'Procedimientos médico-quirúrgicos',
+    'Examen y diagnóstico de especialidad',
+    'Cirugía tercer molar',
+    'Obturación directa',
+    'Tratamiento endodoncia unirradicular (incluye Vital y no vital)',
+    'Tratamiento endodoncia birradicular (incluye Vital y no vital)',
+    'Rehabilitación mediante prótesis removible acrílica parcial o total',
+    'Reparación de prótesis (compleja y simple)'
+  ];
+
   const stripA=s=>String(s??'').normalize('NFD').replace(/\p{Diacritic}/gu,'');
-  const norm=s=>stripA(String(s??'').trim().toLowerCase());
-  const toNum=v=>{if(v===null||v===undefined||v==='')return NaN;const n=Number(String(v).replace(/[^\d.-]/g,''));return isNaN(n)?NaN:n;};
-  const yes=v=>{const x=stripA(String(v??'').trim().toUpperCase());return x==='SI'||x==='S';};
-  const isMale=v=>["hombre","masculino","male","m"].includes(norm(v));
-  const isFemale=v=>["mujer","femenino","female","f"].includes(norm(v));
-  const findRange=e=>{for(let i=0;i<RANGOS.length;i++)if(e>=RANGOS[i].min&&e<=RANGOS[i].max)return i;return -1;};
-
-  // ── STATE ────────────────────────────────────────────────
-  let allRows=[], treatCounts={}, activeTags=new Set();
-  let remasepResult = null;
-
+  const norm=s=>stripA(String(s??'').trim().toLowerCase()).replace(/\s+/g,' ');
+  const toNum=v=>{if(v===null||v===undefined||v==='')return NaN;const n=Number(String(v).replace(/[^\d.-]/g,''));return Number.isNaN(n)?NaN:n};
+  const yes=v=>{const x=stripA(String(v??'').trim().toUpperCase());return x==='SI'||x==='S'};
+  const isMale=v=>['hombre','masculino','male','m'].includes(norm(v));
+  const isFemale=v=>['mujer','femenino','female','f'].includes(norm(v));
+  const findRange=e=>{for(let i=0;i<RANGOS.length;i++)if(e>=RANGOS[i].min&&e<=RANGOS[i].max)return i;return-1};
   const $=id=>document.getElementById(id);
-  const pasteArea=$('pasteArea'), btnCargar=$('btnCargar'), btnBorrar=$('btnBorrar');
-  const paso2=$('paso2'), paso3=$('paso3'), statsRow=$('statsRow');
-  const tagList=$('tagList'), searchInput=$('searchInput'), suggestions=$('suggestions');
-  const btnTodos=$('btnTodos'), btnLimpiar=$('btnLimpiar'), btnProcesar=$('btnProcesar');
-  const hintSel=$('hintSel'), remasepBody=$('remasepBody'), selNote=$('selNote');
-  // fileInput y fileLoaded eliminados - archivo integrado
-  // variables de paso 4 eliminadas
 
-  // ── PARSE ────────────────────────────────────────────────
+  const orderMap=new Map(ORDEN_REMASEP.map((x,i)=>[norm(x),i]));
+  let allRows=[];
+
   function parseData(text){
     const rows=[];
     const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
-    if(!lines.length) return rows;
-
+    if(!lines.length)return rows;
     const sep=lines[0].includes('\t')?'\t':';';
-
-    // Detectar fila de encabezado y mapear columnas dinámicamente
     let colNombre=1,colSexo=2,colEdad=3,colEmb=4,colMig=5,colProc=8,colCant=9;
-    const firstCols=lines[0].split(sep).map(c=>c.trim().toLowerCase());
+    const firstCols=lines[0].split(sep).map(c=>norm(c));
     const esEncabezado=firstCols.some(c=>c.includes('nombre')||c.includes('procedimiento')||c.includes('fecha'));
     if(esEncabezado){
       firstCols.forEach((c,i)=>{
-        if(c.includes('nombre'))           colNombre=i;
-        else if(c.includes('sexo'))        colSexo=i;
-        else if(c.includes('edad'))        colEdad=i;
-        else if(c.includes('embaraz'))     colEmb=i;
-        else if(c.includes('migr'))        colMig=i;
-        else if(c.includes('procedimiento')||c.includes('actividad')) colProc=i;
-        else if(c.includes('cantidad'))    colCant=i;
+        if(c.includes('nombre'))colNombre=i;
+        else if(c.includes('sexo'))colSexo=i;
+        else if(c.includes('edad'))colEdad=i;
+        else if(c.includes('embaraz'))colEmb=i;
+        else if(c.includes('migr'))colMig=i;
+        else if(c.includes('procedimiento')||c.includes('actividad'))colProc=i;
+        else if(c.includes('cantidad'))colCant=i;
       });
     }
-
     const inicio=esEncabezado?1:0;
     for(const line of lines.slice(inicio)){
       const c=line.split(sep);
-      if(c.length<=colProc) continue;
+      if(c.length<=colProc)continue;
       const nombre=(c[colNombre]||'').trim();
-      if(!nombre) continue;
-      if(/^anulad/i.test(nombre)) continue;
-      if(/^(pago|compra|devoluci[oó]n)/i.test(nombre)) continue;
+      if(!nombre||/^anulad/i.test(nombre)||/^(pago|compra|devoluci[oó]n)/i.test(nombre))continue;
       const proc=(c[colProc]||'').trim();
-      if(!proc||/^pago$/i.test(proc)) continue;
-      rows.push({
-        nombre,
-        sexo      :(c[colSexo]||'').trim(),
-        edad      :(c[colEdad]||'').trim(),
-        embarazada:(c[colEmb]||'').trim(),
-        migrante  :(c[colMig]||'').trim(),
-        tratamiento:proc,
-        cantidad  :Math.max(1,parseInt(c[colCant]||'')||1)
-      });
+      if(!proc||/^pago$/i.test(proc))continue;
+      rows.push({nombre,sexo:(c[colSexo]||'').trim(),edad:(c[colEdad]||'').trim(),embarazada:(c[colEmb]||'').trim(),migrante:(c[colMig]||'').trim(),tratamiento:proc,cantidad:Math.max(1,parseInt(c[colCant]||'')||1)});
     }
     return rows;
   }
 
-  function renderStats(){
-    const prest=Object.values(treatCounts).reduce((a,b)=>a+b,0);
-    const migr=allRows.filter(r=>/^si$/i.test(r.migrante)).length;
-    statsRow.innerHTML=`
-      <div class="stat-box"><div class="val">${allRows.length}</div><div class="lbl">Atenciones</div></div>
-      <div class="stat-box"><div class="val">${prest}</div><div class="lbl">Prestaciones</div></div>
-      <div class="stat-box"><div class="val">${Object.keys(treatCounts).length}</div><div class="lbl">Tipos trat.</div></div>
-      <div class="stat-box"><div class="val">${migr}</div><div class="lbl">Migrantes</div></div>`;
+  function canonicalTrat(name){
+    const n=norm(name);
+    const idx=orderMap.get(n);
+    return idx===undefined?String(name).trim():ORDEN_REMASEP[idx];
   }
 
-  function renderTags(){
-    tagList.innerHTML='';
-    for(const tag of activeTags){
-      const el=document.createElement('div');
-      el.className='tag';
-      el.innerHTML=`${tag} <span class="rm" data-t="${tag}">✕</span>`;
-      el.querySelector('.rm').addEventListener('click',()=>{activeTags.delete(tag);renderTags();updBtn();});
-      tagList.appendChild(el);
-    }
-  }
-
-  function updBtn(){
-    btnProcesar.disabled=activeTags.size===0;
-    hintSel.textContent=activeTags.size===0
-      ?'Selecciona al menos un tratamiento para procesar.'
-      :`${activeTags.size} tratamiento(s) seleccionado(s). Listo para procesar.`;
-  }
-
-  function showSug(q){
-    const query=q.trim().toLowerCase();
-    const items=Object.entries(treatCounts)
-      .filter(([k])=>!activeTags.has(k)&&(!query||k.toLowerCase().includes(query)))
-      .sort((a,b)=>b[1]-a[1]).slice(0,20);
-    if(!items.length){suggestions.style.display='none';return;}
-    suggestions.innerHTML=items.map(([k,v])=>
-      `<div class="sug-item" data-t="${k}">${k}<span class="sug-cnt">${v}</span></div>`).join('');
-    suggestions.querySelectorAll('.sug-item').forEach(el=>{
-      el.addEventListener('click',()=>{
-        activeTags.add(el.dataset.t);searchInput.value='';
-        suggestions.style.display='none';renderTags();updBtn();
-      });
-    });
-    suggestions.style.display='block';
-  }
-
-  // ── REMASEP LOGIC ────────────────────────────────────────
-  function runRemasep(){
-    const filtered=allRows.filter(r=>activeTags.has(r.tratamiento));
-
-    // Acumular por tratamiento Y por rango de edad
+  function buildByTrat(rows){
     const byTrat={};
-    for(const r of filtered){
-      const edad=toNum(r.edad);
-      if(Number.isNaN(edad))continue;
-      const ri=findRange(edad);
-      if(ri<0)continue;
-      if(!byTrat[r.tratamiento])byTrat[r.tratamiento]={ri:{},E:0,Mi:0};
-      if(!byTrat[r.tratamiento].ri[ri])byTrat[r.tratamiento].ri[ri]={H:0,M:0};
+    for(const r of rows){
+      const edad=toNum(r.edad),ri=findRange(edad);
+      if(Number.isNaN(edad)||ri<0)continue;
+      const trat=canonicalTrat(r.tratamiento);
+      if(!byTrat[trat])byTrat[trat]={ri:{},E:0,Mi:0};
+      if(!byTrat[trat].ri[ri])byTrat[trat].ri[ri]={H:0,M:0};
       const c=r.cantidad;
-      if(isMale(r.sexo))   byTrat[r.tratamiento].ri[ri].H+=c;
-      if(isFemale(r.sexo)) byTrat[r.tratamiento].ri[ri].M+=c;
-      if(yes(r.embarazada))byTrat[r.tratamiento].E+=c;
-      if(yes(r.migrante))  byTrat[r.tratamiento].Mi+=c;
+      if(isMale(r.sexo))byTrat[trat].ri[ri].H+=c;
+      if(isFemale(r.sexo))byTrat[trat].ri[ri].M+=c;
+      if(yes(r.embarazada))byTrat[trat].E+=c;
+      if(yes(r.migrante))byTrat[trat].Mi+=c;
     }
-
-    // Acumular tabla global combinada
-    const tabla={};
-    for(const r of filtered){
-      const edad=toNum(r.edad);
-      if(Number.isNaN(edad))continue;
-      const ri=findRange(edad);
-      if(ri<0)continue;
-      const rn=RANGOS[ri].n;
-      if(!tabla[rn])tabla[rn]={H:0,M:0,E:0,Mi:0};
-      const c=r.cantidad;
-      if(isMale(r.sexo))   tabla[rn].H+=c;
-      if(isFemale(r.sexo)) tabla[rn].M+=c;
-      if(yes(r.embarazada))tabla[rn].E+=c;
-      if(yes(r.migrante))  tabla[rn].Mi+=c;
-    }
-    remasepResult=tabla;
-
-    if(!Object.keys(byTrat).length){
-      remasepBody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted)">Sin pacientes con edad registrada para los tratamientos seleccionados.</td></tr>`;
-      paso3.style.display='block';paso3.scrollIntoView({behavior:'smooth',block:'start'});return;
-    }
-
-    // Tabla combinada global
-    let out=RANGOS.map(r=>({rango:r.n,...(tabla[r.n]||{H:0,M:0,E:0,Mi:0})}))
-                  .filter(x=>(x.H+x.M)>0);
-    const sum=out.reduce((a,c)=>({H:a.H+c.H,M:a.M+c.M,E:a.E+c.E,Mi:a.Mi+c.Mi}),{H:0,M:0,E:0,Mi:0});
-    out.push({rango:'Total',...sum});
-    out.push({rango:'Total Personas',H:sum.H+sum.M,M:'',E:'',Mi:''});
-    let thtml='';
-    for(const r of out){
-      const tot=r.rango.startsWith('Total');
-      thtml+=`<tr${tot?' class="row-total"':''}><td class="left">${r.rango}</td><td>${r.H??0}</td><td>${r.M??0}</td><td>${r.E??0}</td><td>${r.Mi??0}</td></tr>`;
-    }
-    remasepBody.innerHTML=thtml;
-
-    // Bloques de copia por tratamiento
-    let copyHtml='<div style="margin-top:6px"><strong style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Copiar por tratamiento para pegar en Excel</strong></div>';
-    for(const [trat, data] of Object.entries(byTrat)){
-      // 36 valores: H[0]M[0] H[1]M[1]...H[16]M[16] Embarazadas Migrantes
-      const vals=new Array(36).fill(0);
-      for(const [ri,d] of Object.entries(data.ri)){
-        vals[Number(ri)*2]  =d.H;
-        vals[Number(ri)*2+1]=d.M;
-      }
-      vals[34]=data.E;
-      vals[35]=data.Mi;
-      const tsv=vals.join('\t');
-
-      // Preview: solo celdas con valor
-      let preview='';
-      let totalTrat=0;
-      for(let i=0;i<34;i++){
-        if(vals[i]){
-          const rn=RANGOS[Math.floor(i/2)].n;
-          const short=rn.replace(' años','a').replace('Menos de 1 año - 1 año','<1a').replace(' y más','+');
-          const tipo=i%2===0?'H':'M';
-          preview+=`<span class="cv">${short} ${tipo}: <b>${vals[i]}</b></span>`;
-          totalTrat+=vals[i];
-        }
-      }
-      if(vals[34]) preview+=`<span class="cv cv-emb">Emb: <b>${vals[34]}</b></span>`;
-      if(vals[35]) preview+=`<span class="cv cv-mig">Mig: <b>${vals[35]}</b></span>`;
-      preview+=`<span class="cv" style="background:var(--orange-mid);border-color:var(--border2);font-weight:700">Total: <b>${totalTrat}</b></span>`;
-
-      const safeId='cb_'+Math.random().toString(36).substr(2,8);
-      copyHtml+=`<div class="copy-block">
-        <div class="copy-header">
-          <span class="copy-trat">${trat}</span>
-          <button class="btn-copy" id="${safeId}">📋 Copiar fila</button>
-        </div>
-        <div class="copy-preview">${preview}</div>
-        <p class="copy-hint" id="h_${safeId}"></p>
-      </div>`;
-
-      // Registrar listener después del render
-      window._copyData = window._copyData||{};
-      window._copyData[safeId]=tsv;
-    }
-    document.getElementById('copySection').innerHTML=copyHtml;
-
-    // Asignar eventos a cada botón copiar
-    for(const [id,tsv] of Object.entries(window._copyData||{})){
-      const btn=document.getElementById(id);
-      if(!btn)continue;
-      btn.addEventListener('click',()=>{
-        const hint=document.getElementById('h_'+id);
-        const fallback=()=>{
-          const ta=document.createElement('textarea');
-          ta.value=tsv;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
-          document.body.appendChild(ta);ta.focus();ta.select();
-          try{document.execCommand('copy');}catch(e){}
-          document.body.removeChild(ta);
-        };
-        if(navigator.clipboard&&navigator.clipboard.writeText){
-          navigator.clipboard.writeText(tsv).then(()=>{}).catch(fallback);
-        } else { fallback(); }
-        btn.textContent='✅ Copiado!';
-        btn.style.cssText='background:var(--green-light);color:var(--green);border-color:#86efac';
-        if(hint) hint.textContent='Pega desde la celda E de la fila correspondiente en Excel (Ctrl+V).';
-        setTimeout(()=>{btn.textContent='📋 Copiar fila';btn.style.cssText='';},2500);
-      });
-    }
-
-    selNote.innerHTML=`Tratamientos incluidos: <strong>${[...activeTags].join(', ')}</strong> &nbsp;·&nbsp; ${filtered.length} filas procesadas`;
-
-    // Botón copiar fila combinada (todos los tratamientos juntos)
-    const valsCombinados=new Array(36).fill(0);
-    for(const [trat,data] of Object.entries(byTrat)){
-      for(const [ri,d] of Object.entries(data.ri)){
-        valsCombinados[Number(ri)*2]  +=d.H;
-        valsCombinados[Number(ri)*2+1]+=d.M;
-      }
-      valsCombinados[34]+=data.E;
-      valsCombinados[35]+=data.Mi;
-    }
-    const tsvCombinado=valsCombinados.join('\t');
-    const btnCopyTabla=document.getElementById('btnCopyTabla');
-    btnCopyTabla.style.display='block';
-    btnCopyTabla.onclick=()=>{
-      const fallback=()=>{const ta=document.createElement('textarea');ta.value=tsvCombinado;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);};
-      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(tsvCombinado).then(()=>{}).catch(fallback);}else{fallback();}
-      btnCopyTabla.textContent='✅ Copiado!';
-      btnCopyTabla.style.cssText='background:var(--green-light);color:var(--green);border-color:#86efac';
-      setTimeout(()=>{btnCopyTabla.textContent='📋 Copiar fila';btnCopyTabla.style.cssText='';},2500);
-    };
-
-    // ── SECCIÓN AUTOMÁTICA: Procedimientos Médico Quirúrgicos (20% de Exodoncia) ──
-    const _mqSection=document.getElementById('mqSection');
-    const exoTrats=Object.keys(byTrat).filter(t=>/exodoncia/i.test(t));
-    if(exoTrats.length>0){
-      // Acumular todos los pacientes de exodoncia
-      const mqByRi={};let mqE=0,mqMi=0,totalExoPers=0;
-      for(const t of exoTrats){
-        const d=byTrat[t];
-        for(const [ri,v] of Object.entries(d.ri)){
-          if(!mqByRi[ri])mqByRi[ri]={H:0,M:0};
-          mqByRi[ri].H+=v.H; mqByRi[ri].M+=v.M;
-          totalExoPers+=v.H+v.M;
-        }
-        mqE+=d.E; mqMi+=d.Mi;
-      }
-      // Usar total real de exodoncias (incluye pacientes sin edad registrada)
-      const totalExoReal=Object.entries(treatCounts).filter(([k])=>/exodoncia/i.test(k)).reduce((s,[,v])=>s+v,0);
-      const totalMQ=Math.max(1,Math.round(totalExoReal*0.20));
-      const ratio=totalExoPers>0?totalMQ/totalExoPers:0;
-
-      // Escalar al 20% usando largest remainder para que sume exactamente totalMQ
-      const mqVals=new Array(36).fill(0);
-      // Calcular valores exactos con decimales para H y M por rango
-      const exactos=[];
-      for(const [ri,v] of Object.entries(mqByRi)){
-        exactos.push({ri:Number(ri),tipo:'H',exact:v.H*ratio});
-        exactos.push({ri:Number(ri),tipo:'M',exact:v.M*ratio});
-      }
-      // Asignar parte entera primero
-      exactos.forEach(e=>{ e.floor=Math.floor(e.exact); e.rem=e.exact-e.floor; });
-      let asignado=exactos.reduce((s,e)=>s+e.floor,0);
-      // Distribuir el resto por largest remainder
-      const resto=totalMQ-asignado;
-      exactos.sort((a,b)=>b.rem-a.rem);
-      for(let i=0;i<resto;i++) if(exactos[i]) exactos[i].floor+=1;
-      // Volcar a mqVals
-      exactos.forEach(e=>{ mqVals[e.ri*2+(e.tipo==='M'?1:0)]=e.floor; });
-      let sumMQ=exactos.reduce((s,e)=>s+e.floor,0);
-      mqVals[34]=Math.round(mqE*ratio);
-      mqVals[35]=Math.round(mqMi*ratio);
-      const tsvMQ=mqVals.join('\t');
-
-      // Preview
-      let mqPreview='';
-      for(let i=0;i<34;i++){
-        if(mqVals[i]){
-          const rn=RANGOS[Math.floor(i/2)].n;
-          const short=rn.replace(' años','a').replace('Menos de 1 año - 1 año','<1a').replace(' y más','+');
-          mqPreview+=`<span class="cv">${short} ${i%2===0?'H':'M'}: <b>${mqVals[i]}</b></span>`;
-        }
-      }
-      if(mqVals[34]) mqPreview+=`<span class="cv cv-emb">Emb: <b>${mqVals[34]}</b></span>`;
-      if(mqVals[35]) mqPreview+=`<span class="cv cv-mig">Mig: <b>${mqVals[35]}</b></span>`;
-      mqPreview+=`<span class="cv" style="background:var(--orange-mid);border-color:var(--border2);font-weight:700">Total: <b>${sumMQ}</b></span>`;
-
-      const mqId='mq_btn_'+Math.random().toString(36).substr(2,6);
-      _mqSection.innerHTML=`
-        <div style="margin-bottom:8px"><strong style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Derivado automático (20% de Exodoncia)</strong> <span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--orange-mid);border-radius:5px;padding:1px 7px">${totalExoReal} exodoncias × 20% = ${totalMQ}</span></div>
-        <div class="copy-block">
-          <div class="copy-header">
-            <span class="copy-trat">Procedimientos Médico Quirúrgicos</span>
-            <button class="btn-copy" id="${mqId}">📋 Copiar fila</button>
-          </div>
-          <div class="copy-preview">${mqPreview}</div>
-          <p class="copy-hint" id="h_${mqId}"></p>
-        </div>`;
-      _mqSection.style.display='block';
-
-      const mqBtn=document.getElementById(mqId);
-      if(mqBtn) mqBtn.addEventListener('click',()=>{
-        const hint=document.getElementById('h_'+mqId);
-        const fallback=()=>{const ta=document.createElement('textarea');ta.value=tsvMQ;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);};
-        if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(tsvMQ).then(()=>{}).catch(fallback);}else{fallback();}
-        mqBtn.textContent='✅ Copiado!';
-        mqBtn.style.cssText='background:var(--green-light);color:var(--green);border-color:#86efac';
-        if(hint) hint.textContent='Pega desde la celda E de la fila correspondiente en Excel (Ctrl+V).';
-        setTimeout(()=>{mqBtn.textContent='📋 Copiar fila';mqBtn.style.cssText='';},2500);
-      });
-    } else {
-      _mqSection.style.display='none';
-      _mqSection.innerHTML='';
-    }
-
-    paso3.style.display='block';
-    paso3.scrollIntoView({behavior:'smooth',block:'start'});
+    return byTrat;
   }
 
+  function valsFromData(data){
+    const vals=new Array(36).fill(0);
+    for(const [ri,d] of Object.entries(data.ri||{})){
+      vals[Number(ri)*2]=d.H||0;
+      vals[Number(ri)*2+1]=d.M||0;
+    }
+    vals[34]=data.E||0;vals[35]=data.Mi||0;
+    return vals;
+  }
 
-  // ── MAIN EVENTS ──────────────────────────────────────────
-  btnCargar.addEventListener('click',()=>{
-    const text=pasteArea.value;
-    if(!text.trim()){alert('Pega los datos primero.');return;}
+  function buildMQ(){
+    const exoRows=allRows.filter(r=>/exodoncia/i.test(r.tratamiento));
+    const totalExoReal=exoRows.reduce((s,r)=>s+r.cantidad,0);
+    const totalMQ=Math.round(totalExoReal*0.20);
+    if(!totalExoReal||!totalMQ)return null;
+
+    const ageCells=[];let totalConEdad=0,emb=0,mig=0;
+    for(const r of exoRows){
+      const edad=toNum(r.edad),ri=findRange(edad),c=r.cantidad;
+      if(yes(r.embarazada))emb+=c;if(yes(r.migrante))mig+=c;
+      if(Number.isNaN(edad)||ri<0)continue;
+      if(isMale(r.sexo)){ageCells.push({ri,tipo:'H',count:c});totalConEdad+=c}
+      else if(isFemale(r.sexo)){ageCells.push({ri,tipo:'M',count:c});totalConEdad+=c}
+    }
+    if(!totalConEdad)return null;
+
+    const grouped=new Map();
+    for(const x of ageCells){const k=x.ri+'|'+x.tipo;grouped.set(k,(grouped.get(k)||0)+x.count)}
+    const ratio=totalMQ/totalConEdad;
+    const exactos=[...grouped.entries()].map(([k,count])=>{const [ri,tipo]=k.split('|');const exact=count*ratio;return{ri:Number(ri),tipo,exact,floor:Math.floor(exact),rem:exact-Math.floor(exact)}});
+    let restante=totalMQ-exactos.reduce((s,x)=>s+x.floor,0);
+    exactos.sort((a,b)=>b.rem-a.rem||a.ri-b.ri||(a.tipo==='H'?-1:1));
+    for(let i=0;i<restante&&i<exactos.length;i++)exactos[i].floor++;
+
+    const data={ri:{},E:Math.round(emb*ratio),Mi:Math.round(mig*ratio)};
+    for(const x of exactos){if(!data.ri[x.ri])data.ri[x.ri]={H:0,M:0};data.ri[x.ri][x.tipo]=x.floor}
+    return{trat:'Procedimientos médico-quirúrgicos',data,totalExoReal,totalMQ,derived:true};
+  }
+
+  function makePreview(vals){
+    const frag=document.createDocumentFragment();
+    let total=0;
+    for(let i=0;i<34;i++){
+      if(!vals[i])continue;
+      const rn=RANGOS[Math.floor(i/2)].n;
+      const short=rn.replace(' años','a').replace('Menos de 1 año - 1 año','<1a').replace(' y más','+');
+      const sp=document.createElement('span');sp.className='cv';
+      sp.textContent=`${short} ${i%2===0?'H':'M'}: ${vals[i]}`;frag.appendChild(sp);total+=vals[i];
+    }
+    if(vals[34]){const sp=document.createElement('span');sp.className='cv cv-emb';sp.textContent=`Emb: ${vals[34]}`;frag.appendChild(sp)}
+    if(vals[35]){const sp=document.createElement('span');sp.className='cv cv-mig';sp.textContent=`Mig: ${vals[35]}`;frag.appendChild(sp)}
+    const totalSp=document.createElement('span');totalSp.className='cv cv-total';totalSp.textContent=`Total: ${total}`;frag.appendChild(totalSp);
+    return frag;
+  }
+
+  function copyText(text,btn,hint){
+    const fallback=()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(ta)};
+    const done=()=>{btn.textContent='✅ Copiado';hint.textContent='Pega desde la celda E de la fila correspondiente en Excel.';setTimeout(()=>btn.textContent='📋 Copiar fila',2200)};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(done).catch(()=>{fallback();done()});
+    else{fallback();done()}
+  }
+
+  function renderCopyBlock(item,position,isOther){
+    const vals=valsFromData(item.data),tsv=vals.join('\t');
+    const block=document.createElement('div');block.className='copy-block'+(item.derived?' derived':'');
+    const header=document.createElement('div');header.className='copy-header';
+    const titleWrap=document.createElement('div');titleWrap.className='copy-title-wrap';
+    const num=document.createElement('span');num.className='order-num';num.textContent=isOther?'•':String(position+1);
+    const title=document.createElement('span');title.className='copy-trat';title.textContent=item.trat;
+    titleWrap.append(num,title);
+    if(item.derived){const badge=document.createElement('span');badge.className='badge';badge.textContent=`${item.totalExoReal} exod. × 20% = ${item.totalMQ}`;titleWrap.appendChild(badge)}
+    const btn=document.createElement('button');btn.className='btn-copy';btn.textContent='📋 Copiar fila';
+    header.append(titleWrap,btn);
+    const preview=document.createElement('div');preview.className='copy-preview';preview.appendChild(makePreview(vals));
+    const hint=document.createElement('p');hint.className='copy-hint';
+    btn.addEventListener('click',()=>copyText(tsv,btn,hint));
+    block.append(header,preview,hint);return block;
+  }
+
+  function runRemasep(){
+    const byTrat=buildByTrat(allRows);
+    const tabla={};
+    for(const r of allRows){
+      const edad=toNum(r.edad),ri=findRange(edad);if(Number.isNaN(edad)||ri<0)continue;
+      const rn=RANGOS[ri].n;if(!tabla[rn])tabla[rn]={H:0,M:0,E:0,Mi:0};const c=r.cantidad;
+      if(isMale(r.sexo))tabla[rn].H+=c;if(isFemale(r.sexo))tabla[rn].M+=c;if(yes(r.embarazada))tabla[rn].E+=c;if(yes(r.migrante))tabla[rn].Mi+=c;
+    }
+
+    const out=RANGOS.map(r=>({rango:r.n,...(tabla[r.n]||{H:0,M:0,E:0,Mi:0})})).filter(x=>x.H+x.M>0);
+    const sum=out.reduce((a,c)=>({H:a.H+c.H,M:a.M+c.M,E:a.E+c.E,Mi:a.Mi+c.Mi}),{H:0,M:0,E:0,Mi:0});
+    const body=$('remasepBody');body.innerHTML='';
+    for(const r of [...out,{rango:'Total',...sum}]){
+      const tr=document.createElement('tr');if(r.rango==='Total')tr.className='row-total';
+      [r.rango,r.H||0,r.M||0,r.E||0,r.Mi||0].forEach((v,i)=>{const td=document.createElement('td');if(i===0)td.className='left';td.textContent=v;tr.appendChild(td)});body.appendChild(tr);
+    }
+
+    const official=[],others=[];
+    for(const [trat,data] of Object.entries(byTrat)){
+      if(norm(trat)===norm('Procedimientos médico-quirúrgicos'))continue;
+      const idx=orderMap.get(norm(trat));
+      const item={trat,data,idx:idx===undefined?999:idx};
+      (idx===undefined?others:official).push(item);
+    }
+    const mq=buildMQ();if(mq)official.push({...mq,idx:orderMap.get(norm(mq.trat))});
+    official.sort((a,b)=>a.idx-b.idx||a.trat.localeCompare(b.trat,'es'));
+    others.sort((a,b)=>a.trat.localeCompare(b.trat,'es'));
+
+    const copy=$('copySection');copy.innerHTML='';
+    official.forEach(item=>copy.appendChild(renderCopyBlock(item,item.idx,false)));
+    if(others.length){
+      const lab=document.createElement('div');lab.className='section-label other-title';lab.textContent='Otros procedimientos detectados';copy.appendChild(lab);
+      others.forEach(item=>copy.appendChild(renderCopyBlock(item,0,true)));
+    }
+    if(!official.length&&!others.length){const div=document.createElement('div');div.className='empty';div.textContent='No se encontraron procedimientos con edad y sexo válidos.';copy.appendChild(div)}
+
+    const prestaciones=allRows.reduce((s,r)=>s+r.cantidad,0);
+    const migrantes=allRows.filter(r=>yes(r.migrante)).length;
+    $('statsRow').innerHTML=`<div class="stat-box"><div class="val">${allRows.length}</div><div class="lbl">Atenciones</div></div><div class="stat-box"><div class="val">${prestaciones}</div><div class="lbl">Prestaciones</div></div><div class="stat-box"><div class="val">${official.length+others.length}</div><div class="lbl">Filas generadas</div></div><div class="stat-box"><div class="val">${migrantes}</div><div class="lbl">Registros migrantes</div></div>`;
+    $('resultNote').textContent=`Procesamiento automático completado. Los procedimientos reconocidos se muestran en el mismo orden de REMASEP_OD${others.length?`; ${others.length} procedimiento(s) no reconocido(s) aparecen al final para no perder datos.`:'.'}`;
+    $('resultados').style.display='block';$('resultados').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  $('btnCargar').addEventListener('click',()=>{
+    const text=$('pasteArea').value;if(!text.trim()){alert('Pega la tabla completa primero.');return}
     allRows=parseData(text);
     if(!allRows.length){
-      const lineas=pasteArea.value.trim().split(/\r?\n/).filter(l=>l.trim());
-      const cols=lineas[0]?lineas[0].split('\t').length:0;
-      alert(`No se encontraron filas válidas.\n\nDiagnóstico:\n• Líneas pegadas: ${lineas.length}\n• Columnas detectadas en la 1ª línea: ${cols} (se necesitan 9+)\n\nAsegúrate de copiar directamente desde Excel seleccionando las filas con Ctrl+C.`);
-      return;
+      const lines=text.trim().split(/\r?\n/).filter(l=>l.trim()),cols=lines[0]?lines[0].split('\t').length:0;
+      alert(`No se encontraron filas válidas.\n\nLíneas pegadas: ${lines.length}\nColumnas detectadas en la primera línea: ${cols}\n\nCopia la tabla directamente desde Excel y vuelve a intentar.`);return;
     }
-    treatCounts={};
-    for(const r of allRows)treatCounts[r.tratamiento]=(treatCounts[r.tratamiento]||0)+r.cantidad;
-    activeTags.clear();
-    renderStats();renderTags();updBtn();
-    paso2.style.display='block';paso3.style.display='none';
-    paso2.scrollIntoView({behavior:'smooth',block:'start'});
+    runRemasep();
   });
 
-  btnBorrar.addEventListener('click',()=>{
-    pasteArea.value='';allRows=[];treatCounts={};activeTags.clear();remasepResult=null;
-    paso2.style.display='none';paso3.style.display='none';
-      });
-
-  btnTodos.addEventListener('click',()=>{Object.keys(treatCounts).forEach(k=>activeTags.add(k));renderTags();updBtn();});
-  btnLimpiar.addEventListener('click',()=>{activeTags.clear();renderTags();updBtn();paso3.style.display='none';});
-  btnProcesar.addEventListener('click',runRemasep);
-  searchInput.addEventListener('input',()=>showSug(searchInput.value));
-  searchInput.addEventListener('focus',()=>showSug(searchInput.value));
-  document.addEventListener('click',e=>{if(!$('searchBox').contains(e.target))suggestions.style.display='none';});
+  $('btnBorrar').addEventListener('click',()=>{$('pasteArea').value='';allRows=[];$('resultados').style.display='none';$('remasepBody').innerHTML='';$('copySection').innerHTML=''});
+  $('pasteArea').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')$('btnCargar').click()});
 })();
 </script>
 </body>
