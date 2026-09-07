@@ -190,6 +190,16 @@
   const isMale=v=>["hombre","masculino","male","m"].includes(norm(v));
   const isFemale=v=>["mujer","femenino","female","f"].includes(norm(v));
   const findRange=e=>{for(let i=0;i<RANGOS.length;i++)if(e>=RANGOS[i].min&&e<=RANGOS[i].max)return i;return -1;};
+  const EXCLUIR_TODOS=[
+    'protesis acrilica','protesis flexible','bracket','ortodoncia montaje','ortodoncia retiro',
+    'control ortodoncia','rx','dxrx','protesis prueba','abono tto','cont superior','cimentacion',
+    'blanqueamiento','otro'
+  ];
+  const excluirDeTodos=t=>{
+    const n=norm(t);
+    return EXCLUIR_TODOS.some(x=>n===x||n.startsWith(x+' '));
+  };
+  const displayTrat=t=>norm(t)==='corona'?'Rehabilitación Fija: Corona':t;
 
   // ── STATE ────────────────────────────────────────────────
   let allRows=[], treatCounts={}, activeTags=new Set();
@@ -266,7 +276,7 @@
     for(const tag of activeTags){
       const el=document.createElement('div');
       el.className='tag';
-      el.innerHTML=`${tag} <span class="rm" data-t="${tag}">✕</span>`;
+      el.innerHTML=`${displayTrat(tag)} <span class="rm" data-t="${tag}">✕</span>`;
       el.querySelector('.rm').addEventListener('click',()=>{activeTags.delete(tag);renderTags();updBtn();});
       tagList.appendChild(el);
     }
@@ -282,11 +292,11 @@
   function showSug(q){
     const query=q.trim().toLowerCase();
     const items=Object.entries(treatCounts)
-      .filter(([k])=>!activeTags.has(k)&&(!query||k.toLowerCase().includes(query)))
+      .filter(([k])=>!activeTags.has(k)&&(!query||k.toLowerCase().includes(query)||displayTrat(k).toLowerCase().includes(query)))
       .sort((a,b)=>b[1]-a[1]).slice(0,20);
     if(!items.length){suggestions.style.display='none';return;}
     suggestions.innerHTML=items.map(([k,v])=>
-      `<div class="sug-item" data-t="${k}">${k}<span class="sug-cnt">${v}</span></div>`).join('');
+      `<div class="sug-item" data-t="${k}">${displayTrat(k)}<span class="sug-cnt">${v}</span></div>`).join('');
     suggestions.querySelectorAll('.sug-item').forEach(el=>{
       el.addEventListener('click',()=>{
         activeTags.add(el.dataset.t);searchInput.value='';
@@ -383,7 +393,7 @@
       const safeId='cb_'+Math.random().toString(36).substr(2,8);
       copyHtml+=`<div class="copy-block">
         <div class="copy-header">
-          <span class="copy-trat">${trat}</span>
+          <span class="copy-trat">${displayTrat(trat)}</span>
           <button class="btn-copy" id="${safeId}">📋 Copiar fila</button>
         </div>
         <div class="copy-preview">${preview}</div>
@@ -419,7 +429,7 @@
       });
     }
 
-    selNote.innerHTML=`Tratamientos incluidos: <strong>${[...activeTags].join(', ')}</strong> &nbsp;·&nbsp; ${filtered.length} filas procesadas`;
+    selNote.innerHTML=`Tratamientos incluidos: <strong>${[...activeTags].map(displayTrat).join(', ')}</strong> &nbsp;·&nbsp; ${filtered.length} filas procesadas`;
 
     // Botón copiar fila combinada (todos los tratamientos juntos)
     const valsCombinados=new Array(36).fill(0);
@@ -554,7 +564,13 @@
     paso2.style.display='none';paso3.style.display='none';
       });
 
-  btnTodos.addEventListener('click',()=>{Object.keys(treatCounts).forEach(k=>activeTags.add(k));renderTags();updBtn();});
+  btnTodos.addEventListener('click',()=>{
+    Object.keys(treatCounts).forEach(k=>{
+      if(excluirDeTodos(k)) activeTags.delete(k);
+      else activeTags.add(k);
+    });
+    renderTags();updBtn();
+  });
   btnLimpiar.addEventListener('click',()=>{activeTags.clear();renderTags();updBtn();paso3.style.display='none';});
   btnProcesar.addEventListener('click',runRemasep);
   searchInput.addEventListener('input',()=>showSug(searchInput.value));
