@@ -67,24 +67,6 @@
   .row-total td{font-weight:700;background:var(--orange-mid)}
   .sel-note{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:10px}
   .sel-note strong{color:var(--ink);font-style:normal}
-  /* Upload zone */
-  .upload-zone{border:2px dashed var(--border2);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
-  .upload-zone:hover,.upload-zone.drag{border-color:var(--orange);background:var(--orange-light)}
-  .upload-zone .ico{font-size:32px;margin-bottom:8px}
-  .upload-zone p{font-size:13px;color:var(--muted)}
-  .upload-zone strong{color:var(--ink)}
-  .file-loaded{display:flex;align-items:center;gap:10px;background:var(--green-light);border:1px solid #86efac;border-radius:10px;padding:10px 14px;margin-top:10px}
-  .file-loaded .ico{font-size:20px}
-  .file-loaded .name{font-size:13px;font-weight:600;color:var(--green)}
-  .file-loaded .sub{font-size:11px;color:var(--muted)}
-  /* mapping table */
-  .map-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
-  .map-table th{background:var(--orange-mid);padding:6px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-  .map-table td{padding:6px 10px;border-bottom:1px solid var(--border)}
-  .map-table tr:last-child td{border-bottom:none}
-  .map-table .matched{color:var(--green);font-weight:600}
-  .map-table .unmatched{color:var(--red)}
-  .map-table .ignored{color:var(--muted);font-style:italic}
   .copy-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;margin-bottom:10px}
   .copy-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
   .copy-trat{font-size:13px;font-weight:700}
@@ -108,8 +90,6 @@
   </div>
 </header>
 <main>
-
-  <!-- PASO 1 -->
   <div class="card">
     <div class="card-title"><span class="step" id="s1">1</span> Pegar datos del mes</div>
     <textarea id="pasteArea" placeholder="Pega aquí los datos copiados desde Excel (columnas separadas por tabulación)&#10;Fecha	Nombre	Sexo	Edad	Embarazada	Migrante		N°Recibo	Procedimiento	Cantidad"></textarea>
@@ -119,8 +99,6 @@
       <button class="btn-danger" id="btnBorrar">✕ Borrar todo</button>
     </div>
   </div>
-
-  <!-- PASO 2 -->
   <div class="card" id="paso2" style="display:none">
     <div class="card-title"><span class="step" id="s2">2</span> Seleccionar tratamientos a clasificar</div>
     <div class="stats-row" id="statsRow"></div>
@@ -140,8 +118,6 @@
     </div>
     <p class="hint" id="hintSel">Selecciona al menos un tratamiento para procesar.</p>
   </div>
-
-  <!-- PASO 3: Resultado REMASEP -->
   <div class="card animate-in" id="paso3" style="display:none">
     <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
       <div style="display:flex;align-items:center;gap:8px"><span class="step done">3</span> Resultado REMASEP</div>
@@ -165,12 +141,9 @@
     <div id="copySection" style="margin-top:16px"></div>
     <div id="mqSection" style="display:none;margin-top:16px"></div>
   </div>
-
 </main>
-
 <script>
 (function(){
-  // ── REMASEP CONFIG ──────────────────────────────────────
   const RANGOS=[
     {n:"Menos de 1 año - 1 año",min:0,max:1},
     {n:"2 años",min:2,max:2},{n:"3 años",min:3,max:3},{n:"4 años",min:4,max:4},
@@ -181,82 +154,60 @@
     {n:"45-59 años",min:45,max:59},{n:"60-64 años",min:60,max:64},
     {n:"65-74 años",min:65,max:74},{n:"75 y más años",min:75,max:200}
   ];
-
-  // ── HELPERS ─────────────────────────────────────────────
   const stripA=s=>String(s??'').normalize('NFD').replace(/\p{Diacritic}/gu,'');
   const norm=s=>stripA(String(s??'').trim().toLowerCase());
+  const normExcl=s=>norm(s).replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
   const toNum=v=>{if(v===null||v===undefined||v==='')return NaN;const n=Number(String(v).replace(/[^\d.-]/g,''));return isNaN(n)?NaN:n;};
   const yes=v=>{const x=stripA(String(v??'').trim().toUpperCase());return x==='SI'||x==='S';};
   const isMale=v=>["hombre","masculino","male","m"].includes(norm(v));
   const isFemale=v=>["mujer","femenino","female","f"].includes(norm(v));
   const findRange=e=>{for(let i=0;i<RANGOS.length;i++)if(e>=RANGOS[i].min&&e<=RANGOS[i].max)return i;return -1;};
-  const EXCLUIR_TODOS=[
-    'protesis acrilica','protesis flexible','bracket','ortodoncia montaje','ortodoncia retiro',
-    'control ortodoncia','rx','dxrx','protesis prueba','abono tto','cont superior','cimentacion',
-    'blanqueamiento','otro'
-  ];
-  const excluirDeTodos=t=>{
-    const n=norm(t);
-    return EXCLUIR_TODOS.some(x=>n===x||n.startsWith(x+' '));
-  };
+  const EXCLUIR_TODOS=new Set([
+    'protesis acrilica','protesis flexible','bracket','braket',
+    'ortodoncia montaje','ortodoncia retiro','control ortodoncia',
+    'rx','dxrx','dx rx','protesis prueba','abono tto','cont superior',
+    'cimentacion','cementacion','blanqueamiento','otro'
+  ].map(normExcl));
+  const excluirDeTodos=t=>EXCLUIR_TODOS.has(normExcl(t));
   const displayTrat=t=>norm(t)==='corona'?'Rehabilitación Fija: Corona':t;
 
-  // ── STATE ────────────────────────────────────────────────
   let allRows=[], treatCounts={}, activeTags=new Set();
   let remasepResult = null;
-
   const $=id=>document.getElementById(id);
   const pasteArea=$('pasteArea'), btnCargar=$('btnCargar'), btnBorrar=$('btnBorrar');
   const paso2=$('paso2'), paso3=$('paso3'), statsRow=$('statsRow');
   const tagList=$('tagList'), searchInput=$('searchInput'), suggestions=$('suggestions');
   const btnTodos=$('btnTodos'), btnLimpiar=$('btnLimpiar'), btnProcesar=$('btnProcesar');
   const hintSel=$('hintSel'), remasepBody=$('remasepBody'), selNote=$('selNote');
-  // fileInput y fileLoaded eliminados - archivo integrado
-  // variables de paso 4 eliminadas
 
-  // ── PARSE ────────────────────────────────────────────────
   function parseData(text){
     const rows=[];
     const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
     if(!lines.length) return rows;
-
     const sep=lines[0].includes('\t')?'\t':';';
-
-    // Detectar fila de encabezado y mapear columnas dinámicamente
     let colNombre=1,colSexo=2,colEdad=3,colEmb=4,colMig=5,colProc=8,colCant=9;
     const firstCols=lines[0].split(sep).map(c=>c.trim().toLowerCase());
     const esEncabezado=firstCols.some(c=>c.includes('nombre')||c.includes('procedimiento')||c.includes('fecha'));
     if(esEncabezado){
       firstCols.forEach((c,i)=>{
-        if(c.includes('nombre'))           colNombre=i;
-        else if(c.includes('sexo'))        colSexo=i;
-        else if(c.includes('edad'))        colEdad=i;
-        else if(c.includes('embaraz'))     colEmb=i;
-        else if(c.includes('migr'))        colMig=i;
-        else if(c.includes('procedimiento')||c.includes('actividad')) colProc=i;
-        else if(c.includes('cantidad'))    colCant=i;
+        if(c.includes('nombre'))colNombre=i;
+        else if(c.includes('sexo'))colSexo=i;
+        else if(c.includes('edad'))colEdad=i;
+        else if(c.includes('embaraz'))colEmb=i;
+        else if(c.includes('migr'))colMig=i;
+        else if(c.includes('procedimiento')||c.includes('actividad'))colProc=i;
+        else if(c.includes('cantidad'))colCant=i;
       });
     }
-
     const inicio=esEncabezado?1:0;
     for(const line of lines.slice(inicio)){
       const c=line.split(sep);
       if(c.length<=colProc) continue;
       const nombre=(c[colNombre]||'').trim();
-      if(!nombre) continue;
-      if(/^anulad/i.test(nombre)) continue;
-      if(/^(pago|compra|devoluci[oó]n)/i.test(nombre)) continue;
+      if(!nombre||/^anulad/i.test(nombre)||/^(pago|compra|devoluci[oó]n)/i.test(nombre))continue;
       const proc=(c[colProc]||'').trim();
-      if(!proc||/^pago$/i.test(proc)) continue;
-      rows.push({
-        nombre,
-        sexo      :(c[colSexo]||'').trim(),
-        edad      :(c[colEdad]||'').trim(),
-        embarazada:(c[colEmb]||'').trim(),
-        migrante  :(c[colMig]||'').trim(),
-        tratamiento:proc,
-        cantidad  :Math.max(1,parseInt(c[colCant]||'')||1)
-      });
+      if(!proc||/^pago$/i.test(proc))continue;
+      rows.push({nombre,sexo:(c[colSexo]||'').trim(),edad:(c[colEdad]||'').trim(),embarazada:(c[colEmb]||'').trim(),migrante:(c[colMig]||'').trim(),tratamiento:proc,cantidad:Math.max(1,parseInt(c[colCant]||'')||1)});
     }
     return rows;
   }
@@ -264,318 +215,113 @@
   function renderStats(){
     const prest=Object.values(treatCounts).reduce((a,b)=>a+b,0);
     const migr=allRows.filter(r=>/^si$/i.test(r.migrante)).length;
-    statsRow.innerHTML=`
-      <div class="stat-box"><div class="val">${allRows.length}</div><div class="lbl">Atenciones</div></div>
-      <div class="stat-box"><div class="val">${prest}</div><div class="lbl">Prestaciones</div></div>
-      <div class="stat-box"><div class="val">${Object.keys(treatCounts).length}</div><div class="lbl">Tipos trat.</div></div>
-      <div class="stat-box"><div class="val">${migr}</div><div class="lbl">Migrantes</div></div>`;
+    statsRow.innerHTML=`<div class="stat-box"><div class="val">${allRows.length}</div><div class="lbl">Atenciones</div></div><div class="stat-box"><div class="val">${prest}</div><div class="lbl">Prestaciones</div></div><div class="stat-box"><div class="val">${Object.keys(treatCounts).length}</div><div class="lbl">Tipos trat.</div></div><div class="stat-box"><div class="val">${migr}</div><div class="lbl">Migrantes</div></div>`;
   }
 
   function renderTags(){
     tagList.innerHTML='';
     for(const tag of activeTags){
-      const el=document.createElement('div');
-      el.className='tag';
+      if(excluirDeTodos(tag))continue;
+      const el=document.createElement('div');el.className='tag';
       el.innerHTML=`${displayTrat(tag)} <span class="rm" data-t="${tag}">✕</span>`;
-      el.querySelector('.rm').addEventListener('click',()=>{activeTags.delete(tag);renderTags();updBtn();});
-      tagList.appendChild(el);
+      el.querySelector('.rm').addEventListener('click',()=>{activeTags.delete(tag);renderTags();updBtn();});tagList.appendChild(el);
     }
   }
-
-  function updBtn(){
-    btnProcesar.disabled=activeTags.size===0;
-    hintSel.textContent=activeTags.size===0
-      ?'Selecciona al menos un tratamiento para procesar.'
-      :`${activeTags.size} tratamiento(s) seleccionado(s). Listo para procesar.`;
-  }
-
+  function updBtn(){btnProcesar.disabled=activeTags.size===0;hintSel.textContent=activeTags.size===0?'Selecciona al menos un tratamiento para procesar.':`${activeTags.size} tratamiento(s) seleccionado(s). Listo para procesar.`;}
   function showSug(q){
     const query=q.trim().toLowerCase();
-    const items=Object.entries(treatCounts)
-      .filter(([k])=>!activeTags.has(k)&&(!query||k.toLowerCase().includes(query)||displayTrat(k).toLowerCase().includes(query)))
-      .sort((a,b)=>b[1]-a[1]).slice(0,20);
+    const items=Object.entries(treatCounts).filter(([k])=>!excluirDeTodos(k)&&!activeTags.has(k)&&(!query||k.toLowerCase().includes(query)||displayTrat(k).toLowerCase().includes(query))).sort((a,b)=>b[1]-a[1]).slice(0,20);
     if(!items.length){suggestions.style.display='none';return;}
-    suggestions.innerHTML=items.map(([k,v])=>
-      `<div class="sug-item" data-t="${k}">${displayTrat(k)}<span class="sug-cnt">${v}</span></div>`).join('');
-    suggestions.querySelectorAll('.sug-item').forEach(el=>{
-      el.addEventListener('click',()=>{
-        activeTags.add(el.dataset.t);searchInput.value='';
-        suggestions.style.display='none';renderTags();updBtn();
-      });
-    });
-    suggestions.style.display='block';
+    suggestions.innerHTML=items.map(([k,v])=>`<div class="sug-item" data-t="${k}">${displayTrat(k)}<span class="sug-cnt">${v}</span></div>`).join('');
+    suggestions.querySelectorAll('.sug-item').forEach(el=>el.addEventListener('click',()=>{activeTags.add(el.dataset.t);searchInput.value='';suggestions.style.display='none';renderTags();updBtn();}));suggestions.style.display='block';
   }
 
-  // ── REMASEP LOGIC ────────────────────────────────────────
   function runRemasep(){
-    const filtered=allRows.filter(r=>activeTags.has(r.tratamiento));
-
-    // Acumular por tratamiento Y por rango de edad
+    [...activeTags].forEach(t=>{if(excluirDeTodos(t))activeTags.delete(t);});
+    const filtered=allRows.filter(r=>activeTags.has(r.tratamiento)&&!excluirDeTodos(r.tratamiento));
     const byTrat={};
     for(const r of filtered){
-      const edad=toNum(r.edad);
-      if(Number.isNaN(edad))continue;
-      const ri=findRange(edad);
-      if(ri<0)continue;
+      const edad=toNum(r.edad);if(Number.isNaN(edad))continue;const ri=findRange(edad);if(ri<0)continue;
       if(!byTrat[r.tratamiento])byTrat[r.tratamiento]={ri:{},E:0,Mi:0};
       if(!byTrat[r.tratamiento].ri[ri])byTrat[r.tratamiento].ri[ri]={H:0,M:0};
-      const c=r.cantidad;
-      if(isMale(r.sexo))   byTrat[r.tratamiento].ri[ri].H+=c;
-      if(isFemale(r.sexo)) byTrat[r.tratamiento].ri[ri].M+=c;
-      if(yes(r.embarazada))byTrat[r.tratamiento].E+=c;
-      if(yes(r.migrante))  byTrat[r.tratamiento].Mi+=c;
+      const c=r.cantidad;if(isMale(r.sexo))byTrat[r.tratamiento].ri[ri].H+=c;if(isFemale(r.sexo))byTrat[r.tratamiento].ri[ri].M+=c;if(yes(r.embarazada))byTrat[r.tratamiento].E+=c;if(yes(r.migrante))byTrat[r.tratamiento].Mi+=c;
     }
-
-    // Acumular tabla global combinada
     const tabla={};
     for(const r of filtered){
-      const edad=toNum(r.edad);
-      if(Number.isNaN(edad))continue;
-      const ri=findRange(edad);
-      if(ri<0)continue;
-      const rn=RANGOS[ri].n;
-      if(!tabla[rn])tabla[rn]={H:0,M:0,E:0,Mi:0};
-      const c=r.cantidad;
-      if(isMale(r.sexo))   tabla[rn].H+=c;
-      if(isFemale(r.sexo)) tabla[rn].M+=c;
-      if(yes(r.embarazada))tabla[rn].E+=c;
-      if(yes(r.migrante))  tabla[rn].Mi+=c;
+      const edad=toNum(r.edad);if(Number.isNaN(edad))continue;const ri=findRange(edad);if(ri<0)continue;const rn=RANGOS[ri].n;
+      if(!tabla[rn])tabla[rn]={H:0,M:0,E:0,Mi:0};const c=r.cantidad;if(isMale(r.sexo))tabla[rn].H+=c;if(isFemale(r.sexo))tabla[rn].M+=c;if(yes(r.embarazada))tabla[rn].E+=c;if(yes(r.migrante))tabla[rn].Mi+=c;
     }
     remasepResult=tabla;
-
     if(!Object.keys(byTrat).length){
       remasepBody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted)">Sin pacientes con edad registrada para los tratamientos seleccionados.</td></tr>`;
-      paso3.style.display='block';paso3.scrollIntoView({behavior:'smooth',block:'start'});return;
+      document.getElementById('copySection').innerHTML='';document.getElementById('mqSection').style.display='none';paso3.style.display='block';paso3.scrollIntoView({behavior:'smooth',block:'start'});return;
     }
-
-    // Tabla combinada global
-    let out=RANGOS.map(r=>({rango:r.n,...(tabla[r.n]||{H:0,M:0,E:0,Mi:0})}))
-                  .filter(x=>(x.H+x.M)>0);
+    let out=RANGOS.map(r=>({rango:r.n,...(tabla[r.n]||{H:0,M:0,E:0,Mi:0})})).filter(x=>(x.H+x.M)>0);
     const sum=out.reduce((a,c)=>({H:a.H+c.H,M:a.M+c.M,E:a.E+c.E,Mi:a.Mi+c.Mi}),{H:0,M:0,E:0,Mi:0});
-    out.push({rango:'Total',...sum});
-    out.push({rango:'Total Personas',H:sum.H+sum.M,M:'',E:'',Mi:''});
-    let thtml='';
-    for(const r of out){
-      const tot=r.rango.startsWith('Total');
-      thtml+=`<tr${tot?' class="row-total"':''}><td class="left">${r.rango}</td><td>${r.H??0}</td><td>${r.M??0}</td><td>${r.E??0}</td><td>${r.Mi??0}</td></tr>`;
-    }
-    remasepBody.innerHTML=thtml;
+    out.push({rango:'Total',...sum});out.push({rango:'Total Personas',H:sum.H+sum.M,M:'',E:'',Mi:''});
+    let thtml='';for(const r of out){const tot=r.rango.startsWith('Total');thtml+=`<tr${tot?' class="row-total"':''}><td class="left">${r.rango}</td><td>${r.H??0}</td><td>${r.M??0}</td><td>${r.E??0}</td><td>${r.Mi??0}</td></tr>`;}remasepBody.innerHTML=thtml;
 
-    // Bloques de copia por tratamiento
+    window._copyData={};
     let copyHtml='<div style="margin-top:6px"><strong style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Copiar por tratamiento para pegar en Excel</strong></div>';
-    for(const [trat, data] of Object.entries(byTrat)){
-      // 36 valores: H[0]M[0] H[1]M[1]...H[16]M[16] Embarazadas Migrantes
-      const vals=new Array(36).fill(0);
-      for(const [ri,d] of Object.entries(data.ri)){
-        vals[Number(ri)*2]  =d.H;
-        vals[Number(ri)*2+1]=d.M;
-      }
-      vals[34]=data.E;
-      vals[35]=data.Mi;
-      const tsv=vals.join('\t');
-
-      // Preview: solo celdas con valor
-      let preview='';
-      let totalTrat=0;
-      for(let i=0;i<34;i++){
-        if(vals[i]){
-          const rn=RANGOS[Math.floor(i/2)].n;
-          const short=rn.replace(' años','a').replace('Menos de 1 año - 1 año','<1a').replace(' y más','+');
-          const tipo=i%2===0?'H':'M';
-          preview+=`<span class="cv">${short} ${tipo}: <b>${vals[i]}</b></span>`;
-          totalTrat+=vals[i];
-        }
-      }
-      if(vals[34]) preview+=`<span class="cv cv-emb">Emb: <b>${vals[34]}</b></span>`;
-      if(vals[35]) preview+=`<span class="cv cv-mig">Mig: <b>${vals[35]}</b></span>`;
+    for(const [trat,data] of Object.entries(byTrat)){
+      const vals=new Array(36).fill(0);for(const [ri,d] of Object.entries(data.ri)){vals[Number(ri)*2]=d.H;vals[Number(ri)*2+1]=d.M;}vals[34]=data.E;vals[35]=data.Mi;
+      const tsv=vals.join('\t');let preview='',totalTrat=0;
+      for(let i=0;i<34;i++){if(vals[i]){const rn=RANGOS[Math.floor(i/2)].n;const short=rn.replace(' años','a').replace('Menos de 1 año - 1 año','<1a').replace(' y más','+');const tipo=i%2===0?'H':'M';preview+=`<span class="cv">${short} ${tipo}: <b>${vals[i]}</b></span>`;totalTrat+=vals[i];}}
+      if(vals[34])preview+=`<span class="cv cv-emb">Emb: <b>${vals[34]}</b></span>`;if(vals[35])preview+=`<span class="cv cv-mig">Mig: <b>${vals[35]}</b></span>`;
       preview+=`<span class="cv" style="background:var(--orange-mid);border-color:var(--border2);font-weight:700">Total: <b>${totalTrat}</b></span>`;
-
       const safeId='cb_'+Math.random().toString(36).substr(2,8);
-      copyHtml+=`<div class="copy-block">
-        <div class="copy-header">
-          <span class="copy-trat">${displayTrat(trat)}</span>
-          <button class="btn-copy" id="${safeId}">📋 Copiar fila</button>
-        </div>
-        <div class="copy-preview">${preview}</div>
-        <p class="copy-hint" id="h_${safeId}"></p>
-      </div>`;
-
-      // Registrar listener después del render
-      window._copyData = window._copyData||{};
+      copyHtml+=`<div class="copy-block"><div class="copy-header"><span class="copy-trat">${displayTrat(trat)}</span><button class="btn-copy" id="${safeId}">📋 Copiar fila</button></div><div class="copy-preview">${preview}</div><p class="copy-hint" id="h_${safeId}"></p></div>`;
       window._copyData[safeId]=tsv;
     }
     document.getElementById('copySection').innerHTML=copyHtml;
-
-    // Asignar eventos a cada botón copiar
-    for(const [id,tsv] of Object.entries(window._copyData||{})){
-      const btn=document.getElementById(id);
-      if(!btn)continue;
+    for(const [id,tsv] of Object.entries(window._copyData)){
+      const btn=document.getElementById(id);if(!btn)continue;
       btn.addEventListener('click',()=>{
         const hint=document.getElementById('h_'+id);
-        const fallback=()=>{
-          const ta=document.createElement('textarea');
-          ta.value=tsv;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
-          document.body.appendChild(ta);ta.focus();ta.select();
-          try{document.execCommand('copy');}catch(e){}
-          document.body.removeChild(ta);
-        };
-        if(navigator.clipboard&&navigator.clipboard.writeText){
-          navigator.clipboard.writeText(tsv).then(()=>{}).catch(fallback);
-        } else { fallback(); }
-        btn.textContent='✅ Copiado!';
-        btn.style.cssText='background:var(--green-light);color:var(--green);border-color:#86efac';
-        if(hint) hint.textContent='Pega desde la celda E de la fila correspondiente en Excel (Ctrl+V).';
-        setTimeout(()=>{btn.textContent='📋 Copiar fila';btn.style.cssText='';},2500);
+        const fallback=()=>{const ta=document.createElement('textarea');ta.value=tsv;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);};
+        if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsv).catch(fallback);else fallback();
+        btn.textContent='✅ Copiado!';btn.style.cssText='background:var(--green-light);color:var(--green);border-color:#86efac';if(hint)hint.textContent='Pega desde la celda E de la fila correspondiente en Excel (Ctrl+V).';setTimeout(()=>{btn.textContent='📋 Copiar fila';btn.style.cssText='';},2500);
       });
     }
+    selNote.innerHTML=`Tratamientos incluidos: <strong>${[...activeTags].filter(t=>!excluirDeTodos(t)).map(displayTrat).join(', ')}</strong> &nbsp;·&nbsp; ${filtered.length} filas procesadas`;
 
-    selNote.innerHTML=`Tratamientos incluidos: <strong>${[...activeTags].map(displayTrat).join(', ')}</strong> &nbsp;·&nbsp; ${filtered.length} filas procesadas`;
+    const valsCombinados=new Array(36).fill(0);for(const data of Object.values(byTrat)){for(const [ri,d] of Object.entries(data.ri)){valsCombinados[Number(ri)*2]+=d.H;valsCombinados[Number(ri)*2+1]+=d.M;}valsCombinados[34]+=data.E;valsCombinados[35]+=data.Mi;}
+    const tsvCombinado=valsCombinados.join('\t');const btnCopyTabla=document.getElementById('btnCopyTabla');btnCopyTabla.style.display='block';
+    btnCopyTabla.onclick=()=>{const fallback=()=>{const ta=document.createElement('textarea');ta.value=tsvCombinado;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsvCombinado).catch(fallback);else fallback();btnCopyTabla.textContent='✅ Copiado!';setTimeout(()=>btnCopyTabla.textContent='📋 Copiar fila',2500);};
 
-    // Botón copiar fila combinada (todos los tratamientos juntos)
-    const valsCombinados=new Array(36).fill(0);
-    for(const [trat,data] of Object.entries(byTrat)){
-      for(const [ri,d] of Object.entries(data.ri)){
-        valsCombinados[Number(ri)*2]  +=d.H;
-        valsCombinados[Number(ri)*2+1]+=d.M;
-      }
-      valsCombinados[34]+=data.E;
-      valsCombinados[35]+=data.Mi;
-    }
-    const tsvCombinado=valsCombinados.join('\t');
-    const btnCopyTabla=document.getElementById('btnCopyTabla');
-    btnCopyTabla.style.display='block';
-    btnCopyTabla.onclick=()=>{
-      const fallback=()=>{const ta=document.createElement('textarea');ta.value=tsvCombinado;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);};
-      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(tsvCombinado).then(()=>{}).catch(fallback);}else{fallback();}
-      btnCopyTabla.textContent='✅ Copiado!';
-      btnCopyTabla.style.cssText='background:var(--green-light);color:var(--green);border-color:#86efac';
-      setTimeout(()=>{btnCopyTabla.textContent='📋 Copiar fila';btnCopyTabla.style.cssText='';},2500);
-    };
-
-    // ── SECCIÓN AUTOMÁTICA: Procedimientos Médico Quirúrgicos (20% de Exodoncia) ──
     const _mqSection=document.getElementById('mqSection');
     const exoTrats=Object.keys(byTrat).filter(t=>/exodoncia/i.test(t));
     if(exoTrats.length>0){
-      // Acumular todos los pacientes de exodoncia
       const mqByRi={};let mqE=0,mqMi=0,totalExoPers=0;
-      for(const t of exoTrats){
-        const d=byTrat[t];
-        for(const [ri,v] of Object.entries(d.ri)){
-          if(!mqByRi[ri])mqByRi[ri]={H:0,M:0};
-          mqByRi[ri].H+=v.H; mqByRi[ri].M+=v.M;
-          totalExoPers+=v.H+v.M;
-        }
-        mqE+=d.E; mqMi+=d.Mi;
-      }
-      // Usar total real de exodoncias (incluye pacientes sin edad registrada)
+      for(const t of exoTrats){const d=byTrat[t];for(const [ri,v] of Object.entries(d.ri)){if(!mqByRi[ri])mqByRi[ri]={H:0,M:0};mqByRi[ri].H+=v.H;mqByRi[ri].M+=v.M;totalExoPers+=v.H+v.M;}mqE+=d.E;mqMi+=d.Mi;}
       const totalExoReal=Object.entries(treatCounts).filter(([k])=>/exodoncia/i.test(k)).reduce((s,[,v])=>s+v,0);
-      const totalMQ=Math.max(1,Math.round(totalExoReal*0.20));
-      const ratio=totalExoPers>0?totalMQ/totalExoPers:0;
-
-      // Escalar al 20% usando largest remainder para que sume exactamente totalMQ
-      const mqVals=new Array(36).fill(0);
-      // Calcular valores exactos con decimales para H y M por rango
-      const exactos=[];
-      for(const [ri,v] of Object.entries(mqByRi)){
-        exactos.push({ri:Number(ri),tipo:'H',exact:v.H*ratio});
-        exactos.push({ri:Number(ri),tipo:'M',exact:v.M*ratio});
-      }
-      // Asignar parte entera primero
-      exactos.forEach(e=>{ e.floor=Math.floor(e.exact); e.rem=e.exact-e.floor; });
-      let asignado=exactos.reduce((s,e)=>s+e.floor,0);
-      // Distribuir el resto por largest remainder
-      const resto=totalMQ-asignado;
-      exactos.sort((a,b)=>b.rem-a.rem);
-      for(let i=0;i<resto;i++) if(exactos[i]) exactos[i].floor+=1;
-      // Volcar a mqVals
-      exactos.forEach(e=>{ mqVals[e.ri*2+(e.tipo==='M'?1:0)]=e.floor; });
-      let sumMQ=exactos.reduce((s,e)=>s+e.floor,0);
-      mqVals[34]=Math.round(mqE*ratio);
-      mqVals[35]=Math.round(mqMi*ratio);
-      const tsvMQ=mqVals.join('\t');
-
-      // Preview
-      let mqPreview='';
-      for(let i=0;i<34;i++){
-        if(mqVals[i]){
-          const rn=RANGOS[Math.floor(i/2)].n;
-          const short=rn.replace(' años','a').replace('Menos de 1 año - 1 año','<1a').replace(' y más','+');
-          mqPreview+=`<span class="cv">${short} ${i%2===0?'H':'M'}: <b>${mqVals[i]}</b></span>`;
-        }
-      }
-      if(mqVals[34]) mqPreview+=`<span class="cv cv-emb">Emb: <b>${mqVals[34]}</b></span>`;
-      if(mqVals[35]) mqPreview+=`<span class="cv cv-mig">Mig: <b>${mqVals[35]}</b></span>`;
-      mqPreview+=`<span class="cv" style="background:var(--orange-mid);border-color:var(--border2);font-weight:700">Total: <b>${sumMQ}</b></span>`;
-
+      const totalMQ=Math.max(1,Math.round(totalExoReal*0.20));const ratio=totalExoPers>0?totalMQ/totalExoPers:0;
+      const mqVals=new Array(36).fill(0),exactos=[];
+      for(const [ri,v] of Object.entries(mqByRi)){exactos.push({ri:Number(ri),tipo:'H',exact:v.H*ratio});exactos.push({ri:Number(ri),tipo:'M',exact:v.M*ratio});}
+      exactos.forEach(e=>{e.floor=Math.floor(e.exact);e.rem=e.exact-e.floor;});let asignado=exactos.reduce((s,e)=>s+e.floor,0);const resto=totalMQ-asignado;exactos.sort((a,b)=>b.rem-a.rem);for(let i=0;i<resto;i++)if(exactos[i])exactos[i].floor+=1;exactos.forEach(e=>{mqVals[e.ri*2+(e.tipo==='M'?1:0)]=e.floor;});
+      let sumMQ=exactos.reduce((s,e)=>s+e.floor,0);mqVals[34]=Math.round(mqE*ratio);mqVals[35]=Math.round(mqMi*ratio);const tsvMQ=mqVals.join('\t');
+      let mqPreview='';for(let i=0;i<34;i++){if(mqVals[i]){const rn=RANGOS[Math.floor(i/2)].n;const short=rn.replace(' años','a').replace('Menos de 1 año - 1 año','<1a').replace(' y más','+');mqPreview+=`<span class="cv">${short} ${i%2===0?'H':'M'}: <b>${mqVals[i]}</b></span>`;}}
+      if(mqVals[34])mqPreview+=`<span class="cv cv-emb">Emb: <b>${mqVals[34]}</b></span>`;if(mqVals[35])mqPreview+=`<span class="cv cv-mig">Mig: <b>${mqVals[35]}</b></span>`;mqPreview+=`<span class="cv" style="background:var(--orange-mid);border-color:var(--border2);font-weight:700">Total: <b>${sumMQ}</b></span>`;
       const mqId='mq_btn_'+Math.random().toString(36).substr(2,6);
-      _mqSection.innerHTML=`
-        <div style="margin-bottom:8px"><strong style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Derivado automático (20% de Exodoncia)</strong> <span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--orange-mid);border-radius:5px;padding:1px 7px">${totalExoReal} exodoncias × 20% = ${totalMQ}</span></div>
-        <div class="copy-block">
-          <div class="copy-header">
-            <span class="copy-trat">Procedimientos Médico Quirúrgicos</span>
-            <button class="btn-copy" id="${mqId}">📋 Copiar fila</button>
-          </div>
-          <div class="copy-preview">${mqPreview}</div>
-          <p class="copy-hint" id="h_${mqId}"></p>
-        </div>`;
+      _mqSection.innerHTML=`<div style="margin-bottom:8px"><strong style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Derivado automático (20% de Exodoncia)</strong> <span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--orange-mid);border-radius:5px;padding:1px 7px">${totalExoReal} exodoncias × 20% = ${totalMQ}</span></div><div class="copy-block"><div class="copy-header"><span class="copy-trat">Procedimientos Médico Quirúrgicos</span><button class="btn-copy" id="${mqId}">📋 Copiar fila</button></div><div class="copy-preview">${mqPreview}</div><p class="copy-hint" id="h_${mqId}"></p></div>`;
       _mqSection.style.display='block';
+      const mqBtn=document.getElementById(mqId);if(mqBtn)mqBtn.addEventListener('click',()=>{const hint=document.getElementById('h_'+mqId);const fallback=()=>{const ta=document.createElement('textarea');ta.value=tsvMQ;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsvMQ).catch(fallback);else fallback();mqBtn.textContent='✅ Copiado!';if(hint)hint.textContent='Pega desde la celda E de la fila correspondiente en Excel (Ctrl+V).';setTimeout(()=>mqBtn.textContent='📋 Copiar fila',2500);});
+    }else{_mqSection.style.display='none';_mqSection.innerHTML='';}
 
-      const mqBtn=document.getElementById(mqId);
-      if(mqBtn) mqBtn.addEventListener('click',()=>{
-        const hint=document.getElementById('h_'+mqId);
-        const fallback=()=>{const ta=document.createElement('textarea');ta.value=tsvMQ;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);};
-        if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(tsvMQ).then(()=>{}).catch(fallback);}else{fallback();}
-        mqBtn.textContent='✅ Copiado!';
-        mqBtn.style.cssText='background:var(--green-light);color:var(--green);border-color:#86efac';
-        if(hint) hint.textContent='Pega desde la celda E de la fila correspondiente en Excel (Ctrl+V).';
-        setTimeout(()=>{mqBtn.textContent='📋 Copiar fila';mqBtn.style.cssText='';},2500);
-      });
-    } else {
-      _mqSection.style.display='none';
-      _mqSection.innerHTML='';
-    }
-
-    paso3.style.display='block';
-    paso3.scrollIntoView({behavior:'smooth',block:'start'});
+    paso3.style.display='block';paso3.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
-
-  // ── MAIN EVENTS ──────────────────────────────────────────
   btnCargar.addEventListener('click',()=>{
-    const text=pasteArea.value;
-    if(!text.trim()){alert('Pega los datos primero.');return;}
-    allRows=parseData(text);
-    if(!allRows.length){
-      const lineas=pasteArea.value.trim().split(/\r?\n/).filter(l=>l.trim());
-      const cols=lineas[0]?lineas[0].split('\t').length:0;
-      alert(`No se encontraron filas válidas.\n\nDiagnóstico:\n• Líneas pegadas: ${lineas.length}\n• Columnas detectadas en la 1ª línea: ${cols} (se necesitan 9+)\n\nAsegúrate de copiar directamente desde Excel seleccionando las filas con Ctrl+C.`);
-      return;
-    }
-    treatCounts={};
-    for(const r of allRows)treatCounts[r.tratamiento]=(treatCounts[r.tratamiento]||0)+r.cantidad;
-    activeTags.clear();
-    renderStats();renderTags();updBtn();
-    paso2.style.display='block';paso3.style.display='none';
-    paso2.scrollIntoView({behavior:'smooth',block:'start'});
+    const text=pasteArea.value;if(!text.trim()){alert('Pega los datos primero.');return;}
+    allRows=parseData(text);if(!allRows.length){alert('No se encontraron filas válidas.');return;}
+    treatCounts={};for(const r of allRows)treatCounts[r.tratamiento]=(treatCounts[r.tratamiento]||0)+r.cantidad;
+    activeTags.clear();renderStats();renderTags();updBtn();paso2.style.display='block';paso3.style.display='none';paso2.scrollIntoView({behavior:'smooth',block:'start'});
   });
-
-  btnBorrar.addEventListener('click',()=>{
-    pasteArea.value='';allRows=[];treatCounts={};activeTags.clear();remasepResult=null;
-    paso2.style.display='none';paso3.style.display='none';
-      });
-
-  btnTodos.addEventListener('click',()=>{
-    Object.keys(treatCounts).forEach(k=>{
-      if(excluirDeTodos(k)) activeTags.delete(k);
-      else activeTags.add(k);
-    });
-    renderTags();updBtn();
-  });
+  btnBorrar.addEventListener('click',()=>{pasteArea.value='';allRows=[];treatCounts={};activeTags.clear();remasepResult=null;paso2.style.display='none';paso3.style.display='none';});
+  btnTodos.addEventListener('click',()=>{Object.keys(treatCounts).forEach(k=>{if(excluirDeTodos(k))activeTags.delete(k);else activeTags.add(k);});renderTags();updBtn();});
   btnLimpiar.addEventListener('click',()=>{activeTags.clear();renderTags();updBtn();paso3.style.display='none';});
   btnProcesar.addEventListener('click',runRemasep);
-  searchInput.addEventListener('input',()=>showSug(searchInput.value));
-  searchInput.addEventListener('focus',()=>showSug(searchInput.value));
-  document.addEventListener('click',e=>{if(!$('searchBox').contains(e.target))suggestions.style.display='none';});
+  searchInput.addEventListener('input',()=>showSug(searchInput.value));searchInput.addEventListener('focus',()=>showSug(searchInput.value));document.addEventListener('click',e=>{if(!$('searchBox').contains(e.target))suggestions.style.display='none';});
 })();
 </script>
 </body>
