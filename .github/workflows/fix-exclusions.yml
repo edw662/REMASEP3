@@ -1,0 +1,75 @@
+name: Corregir exclusiones REMASEP
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-exclusions.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corregir filtros
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old = """  const EXCLUIR_TODOS=[
+    'protesis acrilica','protesis flexible','bracket','ortodoncia montaje','ortodoncia retiro',
+    'control ortodoncia','rx','dxrx','protesis prueba','abono tto','cont superior','cimentacion',
+    'blanqueamiento','otro'
+  ];
+  const excluirDeTodos=t=>{
+    const n=norm(t);
+    return EXCLUIR_TODOS.some(x=>n===x||n.startsWith(x+' '));
+  };
+"""
+          new = """  const normExcl=s=>norm(s).replace(/[^a-z0-9]+/g,' ').replace(/\\s+/g,' ').trim();
+  const EXCLUIR_TODOS=new Set([
+    'protesis acrilica','protesis flexible','bracket','braket',
+    'ortodoncia montaje','ortodoncia retiro','control ortodoncia',
+    'rx','dxrx','dx rx','protesis prueba','abono tto','cont superior',
+    'cimentacion','cementacion','blanqueamiento','otro'
+  ].map(normExcl));
+  const excluirDeTodos=t=>EXCLUIR_TODOS.has(normExcl(t));
+"""
+          if old not in s:
+              raise SystemExit('No se encontró el bloque de exclusiones esperado')
+          s = s.replace(old, new, 1)
+
+          old = ".filter(([k])=>!activeTags.has(k)&&(!query||k.toLowerCase().includes(query)||displayTrat(k).toLowerCase().includes(query)))"
+          new = ".filter(([k])=>!excluirDeTodos(k)&&!activeTags.has(k)&&(!query||k.toLowerCase().includes(query)||displayTrat(k).toLowerCase().includes(query)))"
+          if old not in s:
+              raise SystemExit('No se encontró el filtro del buscador esperado')
+          s = s.replace(old, new, 1)
+
+          old = "    const filtered=allRows.filter(r=>activeTags.has(r.tratamiento));"
+          new = "    [...activeTags].forEach(t=>{if(excluirDeTodos(t))activeTags.delete(t);});\n    const filtered=allRows.filter(r=>activeTags.has(r.tratamiento)&&!excluirDeTodos(r.tratamiento));"
+          if old not in s:
+              raise SystemExit('No se encontró el filtro de procesamiento esperado')
+          s = s.replace(old, new, 1)
+
+          old = "    for(const tag of activeTags){\n      const el=document.createElement('div');"
+          new = "    for(const tag of activeTags){\n      if(excluirDeTodos(tag))continue;\n      const el=document.createElement('div');"
+          if old not in s:
+              raise SystemExit('No se encontró renderTags esperado')
+          s = s.replace(old, new, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Guardar corrección
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Corregir exclusiones en selección y procesamiento"
+          git push
